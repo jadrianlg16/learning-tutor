@@ -96,3 +96,13 @@ def test_http_get_raises_learner_error_on_http_failure(monkeypatch):
 
     with pytest.raises(cli_bridge.LearnerError):
         cli_bridge.get_candidates(make_settings(), n=1)
+
+
+@pytest.mark.parametrize("var", ["GITHUB_ACTIONS", "FORCE_COLOR", "PY_COLORS"])
+def test_evaluation_method_is_detected_when_help_would_be_styled(monkeypatch, var):
+    """CI sets GITHUB_ACTIONS, which makes Typer render help as a colour terminal; the
+    detection must still find the flag, or every tap is recorded as self-graded."""
+
+    monkeypatch.setattr(cli_bridge, "_EVALUATION_METHOD_SUPPORTED", None)
+    monkeypatch.setenv(var, "1" if var != "GITHUB_ACTIONS" else "true")
+    assert cli_bridge._supports_evaluation_method() is True

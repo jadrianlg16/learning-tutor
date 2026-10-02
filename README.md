@@ -148,7 +148,7 @@ Every variable has a default; [`.env.example`](.env.example) lists them. The mai
 ## Tests, lint and CI
 
 ```bash
-uv run pytest -q -o addopts=""        # 617 tests, no model or network needed
+uv run pytest -q -o addopts=""        # 620 tests, no model or network needed
 uv run ruff check .
 cd render-svc && npm test             # 8 tests
 cd web-ui && npm run lint && npm run typecheck && npm run build

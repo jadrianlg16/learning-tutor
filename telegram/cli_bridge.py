@@ -22,6 +22,8 @@ limitation for a future networked one.
 from __future__ import annotations
 
 import json
+import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -99,13 +101,36 @@ def get_candidates(settings: TelegramSettings, *, n: int = 5) -> list[dict[str, 
 _EVALUATION_METHOD_SUPPORTED: bool | None = None
 
 
+#: ANSI escape sequences (colour, bold, cursor) that a forced-terminal help renderer emits
+_ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+#: env vars that make Typer/Rich render help as a colour terminal even when piped
+#: (``GITHUB_ACTIONS`` among them: CI runs would otherwise get styled help text)
+_FORCE_TERMINAL_VARS = (
+    "GITHUB_ACTIONS",
+    "FORCE_COLOR",
+    "PY_COLORS",
+    "CLICOLOR_FORCE",
+    "TTY_COMPATIBLE",
+)
+
+
+def _plain_help_env() -> dict[str, str]:
+    """The environment for reading CLI help as plain text: no forced terminal, no colour,
+    and wide enough that a long option name is never wrapped or truncated."""
+
+    env = {k: v for k, v in os.environ.items() if k not in _FORCE_TERMINAL_VARS}
+    env.update({"NO_COLOR": "1", "TERM": "dumb", "COLUMNS": "200"})
+    return env
+
+
 def _supports_evaluation_method() -> bool:
     """Feature-detect ``record answer --evaluation-method``.
 
     Present in this repo's CLI (``learner record answer --help`` lists it), but detected
-    here rather than hardcoded so this job
-    degrades gracefully if it is ever missing (an older checkout, a pinned release) instead
-    of crashing every tap on an unknown-option error.
+    here rather than hardcoded so this job degrades gracefully if it is ever missing (an
+    older checkout, a pinned release) instead of crashing every tap on an unknown-option
+    error. The help is read as plain text: styled output splits ``--evaluation-method`` into
+    separately coloured fragments, and a substring check on that text silently fails.
     """
 
     global _EVALUATION_METHOD_SUPPORTED
@@ -115,8 +140,9 @@ def _supports_evaluation_method() -> bool:
             capture_output=True,
             text=True,
             encoding="utf-8",
+            env=_plain_help_env(),
         )
-        _EVALUATION_METHOD_SUPPORTED = "--evaluation-method" in result.stdout
+        _EVALUATION_METHOD_SUPPORTED = "--evaluation-method" in _ANSI.sub("", result.stdout)
     return _EVALUATION_METHOD_SUPPORTED
 
 
