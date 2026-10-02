@@ -1,0 +1,17 @@
+#!/bin/sh
+# Sourced by the nginx image entrypoint before 20-envsubst-on-templates.
+#
+# The /api/ proxy resolves its upstream lazily (see nginx.conf.template for why), so it needs
+# a `resolver`. Precedence: an operator-set DNS_RESOLVER, then whatever the base image worked
+# out, then the container's own /etc/resolv.conf, then Docker's embedded DNS. Nothing
+# machine-specific is baked in.
+# ${VAR:-} everywhere: the nginx entrypoint sources this under `set -u`.
+DNS_RESOLVER="${DNS_RESOLVER:-${NGINX_LOCAL_RESOLVERS:-}}"
+if [ -z "${DNS_RESOLVER}" ] && [ -r /etc/resolv.conf ]; then
+  DNS_RESOLVER=$(awk '$1 == "nameserver" { printf "%s ", $2 }' /etc/resolv.conf)
+fi
+if [ -z "${DNS_RESOLVER}" ]; then
+  DNS_RESOLVER="127.0.0.11"
+fi
+export DNS_RESOLVER
+echo "18-lt-resolver.envsh: DNS_RESOLVER=${DNS_RESOLVER}"

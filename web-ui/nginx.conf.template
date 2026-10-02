@@ -1,0 +1,58 @@
+# Rendered at container start by the nginx image's envsubst entrypoint.
+# Only ${WEB_PORT}, ${GATEWAY_URL} and ${DNS_RESOLVER} are substituted - nginx's own $uri, $host and friends
+# are not environment variables, so envsubst leaves them alone.
+
+server {
+    listen       ${WEB_PORT};
+    listen       [::]:${WEB_PORT};
+    server_name  _;
+
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    # The export is built with trailingSlash: true, so every route is a directory with its
+    # own index.html. No SPA rewrite needed - and no silent fallback that would turn a typo
+    # into the home page.
+    location / {
+        try_files $uri $uri/ $uri/index.html =404;
+    }
+
+    # Hashed build output: safe to cache hard.
+    location /_next/static/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # The UI calls the gateway at the same origin (NEXT_PUBLIC_GATEWAY_URL defaults to /api),
+    # so this is the only server-side piece the container needs.
+    #
+    # proxy_pass takes a *variable* on purpose. With a literal host nginx resolves it once, at
+    # startup, and refuses to boot with "host not found in upstream" if the gateway container
+    # is not up yet - which makes web-ui depend on gateway start order and crash-loop during a
+    # gateway restart. A variable defers the lookup to request time, so the worst case is a 502
+    # on one request instead of a dead container. A variable proxy_pass does not append the
+    # request URI, hence the capture group.
+    location ~ ^/api/(?<lt_path>.*)$ {
+        resolver           ${DNS_RESOLVER} valid=10s ipv6=off;
+        set $lt_gateway    ${GATEWAY_URL};
+        proxy_pass         $lt_gateway/api/$lt_path$is_args$args;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Connection        "";
+
+        # Source uploads and passport exports are the big ones.
+        client_max_body_size 64m;
+        proxy_read_timeout   300s;
+        proxy_send_timeout   300s;
+        proxy_buffering      off;
+    }
+
+    gzip              on;
+    gzip_min_length   1024;
+    gzip_types        text/plain text/css application/javascript application/json image/svg+xml;
+    server_tokens     off;
+}

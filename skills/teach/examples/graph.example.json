@@ -1,0 +1,33 @@
+{
+  "nodes": [
+    { "title": "Vector spaces", "aliases": ["linear spaces"] },
+    { "title": "Basis and coordinates", "aliases": ["coordinate representation"] },
+    { "title": "Linear maps", "aliases": ["linear transformations"] },
+    { "title": "Dual space", "aliases": ["V*", "space of functionals"] },
+    { "title": "Covectors", "aliases": ["dual vectors", "1-forms", "linear functionals"] },
+    { "title": "Row vectors are covectors", "aliases": ["row-vector picture"] },
+    { "title": "Line integrals", "aliases": ["path integrals of vector fields"] },
+    { "title": "Wedge product", "aliases": ["exterior product", "^"] },
+    { "title": "k-forms", "aliases": ["differential k-forms", "alternating tensors"] },
+    { "title": "Exterior derivative", "aliases": ["d", "the d operator"] },
+    { "title": "Pullback", "aliases": ["f^*"] },
+    { "title": "Generalized Stokes theorem", "aliases": ["Stokes for forms"] },
+    { "title": "Classical Stokes and divergence theorems", "aliases": ["vector calculus theorems"] }
+  ],
+  "edges": [
+    { "from": "Vector spaces", "to": "Basis and coordinates", "type": "strict_prerequisite", "provenance": "model" },
+    { "from": "Vector spaces", "to": "Linear maps", "type": "strict_prerequisite", "provenance": "model" },
+    { "from": "Linear maps", "to": "Dual space", "type": "strict_prerequisite", "provenance": "model" },
+    { "from": "Dual space", "to": "Covectors", "type": "strict_prerequisite", "provenance": "model" },
+    { "from": "Basis and coordinates", "to": "Covectors", "type": "recommended_background", "provenance": "model" },
+    { "from": "Row vectors are covectors", "to": "Covectors", "type": "misconception_for", "provenance": "model" },
+    { "from": "Covectors", "to": "Wedge product", "type": "strict_prerequisite", "provenance": "course" },
+    { "from": "Wedge product", "to": "k-forms", "type": "strict_prerequisite", "provenance": "course" },
+    { "from": "k-forms", "to": "Exterior derivative", "type": "strict_prerequisite", "provenance": "reference" },
+    { "from": "Exterior derivative", "to": "Pullback", "type": "co_requisite", "provenance": "model" },
+    { "from": "Exterior derivative", "to": "Generalized Stokes theorem", "type": "strict_prerequisite", "provenance": "reference" },
+    { "from": "Line integrals", "to": "Covectors", "type": "supports", "provenance": "model" },
+    { "from": "Classical Stokes and divergence theorems", "to": "Generalized Stokes theorem", "type": "transfer_related", "provenance": "model" },
+    { "from": "Line integrals", "to": "Wedge product", "type": "course_sequence", "provenance": "course" }
+  ]
+}

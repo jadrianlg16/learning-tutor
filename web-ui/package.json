@@ -1,0 +1,32 @@
+{
+  "name": "learning-tutor-web-ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:mock": "node scripts/dev-mock.mjs",
+    "build": "next build",
+    "build:mock": "node scripts/build-mock.mjs",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "katex": "^0.16.11",
+    "marked": "^15.0.7",
+    "next": "^15.5.25",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/katex": "^0.16.7",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.5.25",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,81 @@
+name: learning-tutor
+
+# Four containers by the extraction rule (CONTRACTS.md): gateway (gateway + llm + tutor +
+# corpus in one process), learner-svc (the only stateful service), render-svc (Node), web-ui
+# (static export behind nginx, proxies /api to the gateway). One public port: the web-ui.
+
+x-python-common: &python-common
+  restart: unless-stopped
+  environment: &python-env
+    LT_DATA_DIR: /data
+    LT_VAULT_DIR: ${VAULT_DIR:+/vault}
+    TZ: ${TZ:-UTC}
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  learner-svc:
+    <<: *python-common
+    build:
+      context: .
+      dockerfile: Dockerfile.learner
+    environment:
+      <<: *python-env
+      LEARNER_HOST: 0.0.0.0
+      LEARNER_PORT: "5034"
+    volumes:
+      - ${LT_DATA_DIR_HOST:-./data}:/data
+      - ${VAULT_DIR:-./data/vault}:/vault
+    expose: ["5034"]
+
+  render-svc:
+    build:
+      context: ./render-svc
+    environment:
+      RENDER_PORT: "5035"
+    expose: ["5035"]
+    restart: unless-stopped
+
+  gateway:
+    <<: *python-common
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    environment:
+      <<: *python-env
+      GATEWAY_HOST: 0.0.0.0
+      GATEWAY_PORT: "5033"
+      LT_LEARNER_URL: http://learner-svc:5034
+      LT_RENDER_URL: http://render-svc:5035
+      LT_PROMPT_PACK_DIR: /app/skills/teach/prompts
+      LT_LLM_PROVIDER: ${LT_LLM_PROVIDER:-ollama}
+      LT_LLM_MODEL: ${LT_LLM_MODEL:-llama3.1:8b}
+      LT_LLM_SOLVER_PROVIDER: ${LT_LLM_SOLVER_PROVIDER:-ollama}
+      LT_LLM_SOLVER_MODEL: ${LT_LLM_SOLVER_MODEL:-gemma3:12b}
+      LT_LLM_ALLOW_SAME_SOLVER: ${LT_LLM_ALLOW_SAME_SOLVER:-0}
+      LT_LLM_TIMEOUT_S: ${LT_LLM_TIMEOUT_S:-120}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      LT_EMBED_MODEL: ${LT_EMBED_MODEL:-nomic-embed-text}
+      LT_TRANSCRIBE_URL: ${LT_TRANSCRIBE_URL:-}
+      LT_YT_TRANSCRIPTS_URL: ${LT_YT_TRANSCRIPTS_URL:-}
+      LT_OCR_URL: ${LT_OCR_URL:-}
+    volumes:
+      - ${LT_DATA_DIR_HOST:-./data}:/data
+      - ${VAULT_DIR:-./data/vault}:/vault
+    depends_on:
+      - learner-svc
+      - render-svc
+    expose: ["5033"]
+
+  web-ui:
+    build:
+      context: ./web-ui
+    environment:
+      WEB_PORT: "8080"
+      GATEWAY_URL: http://gateway:5033
+    ports:
+      - "${GATEWAY_BIND:-127.0.0.1}:${GATEWAY_PORT:-5033}:8080"
+    restart: unless-stopped

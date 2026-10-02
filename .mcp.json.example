@@ -1,0 +1,27 @@
+{
+  "//": "Copy to .mcp.json to register the learner MCP server with Claude Code in this repo. Both servers below are the same code; pick one. `cwd` is per-machine — set it to wherever you cloned this repo. Docs: docs/modules/learner-svc.md.",
+
+  "mcpServers": {
+    "learner": {
+      "//": "In-process: the tools open data/learner/events.db directly. No service to run.",
+      "command": "uv",
+      "args": ["run", "python", "-m", "learning_tutor.mcp_server"],
+      "cwd": "/absolute/path/to/learning-tutor",
+      "env": {
+        "LT_DATA_DIR": "./data",
+        "LT_MCP_ENABLED": "1"
+      }
+    },
+
+    "learner-via-svc": {
+      "//": "Proxy: the same tools, forwarded to a running learner-svc. Start it with `uv run learner-svc` before using this one (the compose stack does not publish port 5034).",
+      "command": "uv",
+      "args": ["run", "python", "-m", "learning_tutor.mcp_server"],
+      "cwd": "/absolute/path/to/learning-tutor",
+      "env": {
+        "LT_LEARNER_URL": "http://127.0.0.1:5034",
+        "LT_MCP_ENABLED": "1"
+      }
+    }
+  }
+}

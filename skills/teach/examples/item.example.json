@@ -1,0 +1,18 @@
+{
+  "stem": "Let alpha be a covector on R^3 given by alpha(x, y, z) = 2x - z, and let v = (1, 5, 4). What is alpha(v), and why?",
+  "options": [
+    "A. (2, 0, -1) - a covector applied to a vector returns a vector in the same space",
+    "B. -2 - evaluate the linear functional at v: 2(1) - 4",
+    "C. 6 - add the components of v that alpha mentions: 1 + 5",
+    "D. 2 - a covector reads off the coefficient of its first term",
+    "E. I do not know"
+  ],
+  "answer": "B",
+  "distractor_misconceptions": {
+    "A": "a covector is just a vector written sideways, so applying it returns a vector rather than a scalar",
+    "C": "a covector sums the vector's components rather than evaluating a linear map",
+    "D": "a covector reads off a single coordinate and ignores its own coefficients"
+  },
+  "kind": "apply",
+  "components": ["covector-evaluation", "linearity", "scalar-vs-vector-output"]
+}

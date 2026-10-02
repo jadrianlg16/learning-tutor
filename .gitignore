@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/
+!data/.gitkeep
+*.db
+*.jsonl
+node_modules/
+.next/
+dist/
+.env
+*.pdf
+.pytest_cache/
+.ruff_cache/
+.mcp.json

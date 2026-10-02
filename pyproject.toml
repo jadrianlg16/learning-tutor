@@ -1,0 +1,61 @@
+[project]
+name = "learning-tutor"
+version = "0.1.0"
+description = "A one-to-one AI tutor with an evidence-backed learner model"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "fastmcp>=2,<3",
+    "fsrs>=6,<7",
+    "httpx>=0.27,<1",
+    "pydantic>=2,<3",
+    "python-docx>=1,<2",
+    "python-pptx>=1,<2",
+    "pymupdf>=1.24,<2",
+    "python-multipart>=0.0.9,<1",
+    "typer>=0.12,<1",
+    "uvicorn[standard]>=0.30,<1",
+]
+
+[project.optional-dependencies]
+# The Google provider in learning_tutor/llm/ai_providers.py imports this lazily inside a
+# try/except; every other provider there talks plain HTTP over httpx. Kept out of the
+# default install so a machine without it can still run the learner and learner-svc.
+google = ["google-generativeai>=0.8,<1"]
+
+[project.scripts]
+learner = "learning_tutor.cli:main"
+learner-svc = "learning_tutor.learner_svc.__main__:main"
+learn-gateway = "learning_tutor.gateway.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["learning_tutor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# ai_providers.py is reused from earlier work and kept close to its original form (see its
+# header); reformatting it would bury the deliberate changes. Excluded, not fixed.
+extend-exclude = ["learning_tutor/llm/ai_providers.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests embed JSON payloads and CLI argument lists verbatim; wrapping them hurts readability.
+"tests/*" = ["E501"]

@@ -1,0 +1,7 @@
+# Extra dependencies for telegram/**. Everything it needs is already a dependency of the root
+# pyproject.toml (httpx for the Telegram Bot API and the optional learner-svc HTTP path,
+# LT_LEARNER_URL; the rest is standard library), so `uv sync` is enough.
+#
+# Kept as a fallback for running the reminder job outside the uv environment:
+#   pip install -r telegram/requirements.txt
+httpx>=0.27
